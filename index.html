@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>💌 You've Got Mail!</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    min-height:100vh; min-height:100dvh;
+    background:#fff5f8;
+    background-image:
+      radial-gradient(circle at 20% 20%,#ffe0ec 0%,transparent 50%),
+      radial-gradient(circle at 80% 80%,#e0f0ff 0%,transparent 50%),
+      radial-gradient(circle at 50% 50%,#fff9e0 0%,transparent 60%);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    font-family:'Baloo 2',cursive;
+    overflow:hidden;
+    padding:20px;
+  }
+
+  .bg-heart{position:fixed;pointer-events:none;animation:bgF linear infinite;opacity:0;}
+  @keyframes bgF{0%{transform:translateY(110vh) rotate(0deg);opacity:0;}10%{opacity:.3;}90%{opacity:.3;}100%{transform:translateY(-8vh) rotate(360deg);opacity:0;}}
+
+  .hint{
+    font-family:'Fredoka One',cursive;
+    font-size:clamp(1rem,5vw,1.3rem);
+    color:#ff7eb3; margin-bottom:24px;
+    animation:hb 1.2s ease-in-out infinite;
+    text-align:center; letter-spacing:.5px;
+  }
+  @keyframes hb{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+
+  .env-wrap{
+    position:relative;
+    width:min(340px, 88vw);
+    cursor:pointer;
+    filter:drop-shadow(0 10px 26px rgba(255,100,150,.25));
+    transition:filter .3s;
+    -webkit-user-select:none; user-select:none;
+  }
+  .env-wrap:active { filter:drop-shadow(0 14px 32px rgba(255,100,150,.45)); }
+  .env-wrap.opening{animation:eShake .4s ease;}
+  @keyframes eShake{0%,100%{transform:rotate(0) scale(1);}25%{transform:rotate(-3deg) scale(1.04);}75%{transform:rotate(3deg) scale(1.04);}}
+
+  .env-wrap svg{width:100%;height:auto;}
+
+  #envFlap{transform-origin:center top;transition:transform .6s cubic-bezier(.4,0,.2,1);}
+  .env-wrap.open #envFlap{transform:rotateX(180deg);}
+
+  .letter-peek{
+    position:absolute; bottom:46%; left:50%;
+    transform:translateX(-50%) translateY(0);
+    width:76%; background:white; border-radius:10px;
+    padding:11px 14px; text-align:center;
+    font-family:'Fredoka One',cursive; font-size:clamp(.8rem,3.8vw,.95rem);
+    color:#444; box-shadow:0 4px 16px rgba(0,0,0,.1);
+    border:2px dashed #ffb3cc; opacity:0; pointer-events:none;
+    transition:opacity .4s, transform .5s cubic-bezier(.2,1.4,.4,1); z-index:10;
+  }
+  .env-wrap.open .letter-peek{opacity:1;transform:translateX(-50%) translateY(-105px);}
+
+  .burst-star{position:fixed;pointer-events:none;font-size:1.5rem;animation:sb .8s ease forwards;z-index:200;}
+  @keyframes sb{0%{transform:translate(0,0) scale(0);opacity:1;}80%{opacity:1;}100%{transform:translate(var(--tx),var(--ty)) scale(1);opacity:0;}}
+
+  .open-btn{
+    margin-top:28px;
+    background:linear-gradient(135deg,#ff6b9d,#ff9de2);
+    color:white; border:4px solid #222; border-radius:50px;
+    padding:clamp(11px,3vw,14px) clamp(24px,8vw,38px);
+    font-family:'Fredoka One',cursive; font-size:clamp(1rem,5vw,1.3rem);
+    letter-spacing:.5px; cursor:pointer;
+    box-shadow:5px 5px 0 #222;
+    transition:transform .15s, box-shadow .15s;
+    display:none; animation:bPop .4s cubic-bezier(.2,1.4,.4,1);
+    -webkit-user-select:none; user-select:none;
+  }
+  @keyframes bPop{0%{transform:scale(0);}100%{transform:scale(1);}}
+  .open-btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 #222;}
+
+  #hCanvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:100;}
+  .page-out{animation:pOut .5s ease forwards;}
+  @keyframes pOut{to{opacity:0;transform:scale(1.05);}}
+</style>
+</head>
+<body>
+<canvas id="hCanvas"></canvas>
+<div id="bgH"></div>
+
+<p class="hint">💌 You've got a special message!<br>Tap to open!</p>
+
+<div class="env-wrap" id="envWrap" onclick="openEnv()">
+  <svg viewBox="0 0 340 230" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="170" cy="222" rx="150" ry="9" fill="rgba(255,100,150,0.13)"/>
+    <rect x="10" y="56" width="320" height="164" rx="16" fill="#fff0f5"/>
+    <rect x="10" y="56" width="320" height="164" rx="16" fill="none" stroke="#ffb3cc" stroke-width="3.5"/>
+    <line x1="10" y1="220" x2="170" y2="138" stroke="#ffd6e8" stroke-width="1.8"/>
+    <line x1="330" y1="220" x2="170" y2="138" stroke="#ffd6e8" stroke-width="1.8"/>
+    <text x="156" y="162" font-size="34">💖</text>
+    <polygon points="10,220 330,220 170,138" fill="#ffe0ec" stroke="#ffb3cc" stroke-width="2.5" stroke-linejoin="round"/>
+    <g id="envFlap" style="transform-origin:170px 56px">
+      <polygon points="10,56 330,56 170,138" fill="#ff9de2" stroke="#ff6b9d" stroke-width="2.5" stroke-linejoin="round"/>
+      <circle cx="170" cy="94" r="20" fill="#ff6b9d" stroke="#fff" stroke-width="2.5"/>
+      <text x="159" y="102" font-size="18" fill="#fff">✨</text>
+    </g>
+    <circle cx="46"  cy="180" r="3.5" fill="#ffb3cc" opacity=".6"/>
+    <circle cx="294" cy="180" r="3.5" fill="#ffb3cc" opacity=".6"/>
+  </svg>
+  <div class="letter-peek">⭐ A special birthday message is waiting for you! ⭐</div>
+</div>
+
+<button class="open-btn" id="openBtn" onclick="goCard()">🎉 Open Your Birthday Card! 🎉</button>
+
+<script>
+const hC=document.getElementById('hCanvas');
+const hX=hC.getContext('2d');
+hC.width=innerWidth;hC.height=innerHeight;
+window.addEventListener('resize',()=>{hC.width=innerWidth;hC.height=innerHeight;});
+
+const bH=document.getElementById('bgH');
+const bEm=['💖','💗','🌸','⭐','💛','✨','🩷'];
+for(let i=0;i<20;i++){
+  const d=document.createElement('div');d.className='bg-heart';
+  d.textContent=bEm[i%bEm.length];
+  d.style.left=Math.random()*100+'vw';
+  d.style.fontSize=(.8+Math.random()*1.1)+'rem';
+  d.style.animationDuration=(8+Math.random()*10)+'s';
+  d.style.animationDelay=(-Math.random()*12)+'s';
+  bH.appendChild(d);
+}
+
+const hs=[];
+const hEm=['💖','💗','🩷','❤️','💛','✨','🌸'];
+class H{constructor(x,y){this.x=x;this.y=y;this.vx=(Math.random()-.5)*4;this.vy=-(Math.random()*4+2);this.sz=Math.random()*18+9;this.e=hEm[Math.floor(Math.random()*hEm.length)];this.r=(Math.random()-.5)*.4;this.rs=(Math.random()-.5)*.05;this.life=1;}u(){this.x+=this.vx;this.y+=this.vy;this.vy+=.07;this.life-=.018;this.r+=this.rs;}d(){hX.save();hX.globalAlpha=Math.max(0,this.life);hX.translate(this.x,this.y);hX.rotate(this.r);hX.font=this.sz+'px serif';hX.textAlign='center';hX.textBaseline='middle';hX.fillText(this.e,0,0);hX.restore();}}
+function spH(x,y,n=10){for(let i=0;i<n;i++)hs.push(new H(x,y));}
+document.addEventListener('click',e=>spH(e.clientX,e.clientY,8));
+document.addEventListener('touchstart',e=>{const t=e.touches[0];spH(t.clientX,t.clientY,8);},{passive:true});
+(function al(){hX.clearRect(0,0,hC.width,hC.height);for(let i=hs.length-1;i>=0;i--){hs[i].u();hs[i].d();if(hs[i].life<=0)hs.splice(i,1);}requestAnimationFrame(al);})();
+
+function burst(cx,cy){
+  const em=['⭐','✨','🌟','💫','🎉','💖','🌸'];
+  for(let i=0;i<10;i++){
+    const s=document.createElement('div');s.className='burst-star';
+    s.textContent=em[i%em.length];
+    const a=Math.PI*2*i/10,d=70+Math.random()*50;
+    s.style.left=cx+'px';s.style.top=cy+'px';
+    s.style.setProperty('--tx',Math.cos(a)*d+'px');
+    s.style.setProperty('--ty',Math.sin(a)*d+'px');
+    s.style.animationDelay=(i*.04)+'s';
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),900);
+  }
+}
+
+let opened=false;
+function openEnv(){
+  if(opened)return; opened=true;
+  const w=document.getElementById('envWrap');
+  w.classList.add('opening');
+  setTimeout(()=>{
+    w.classList.remove('opening');
+    w.classList.add('open');
+    const r=w.getBoundingClientRect();
+    burst(r.left+r.width/2,r.top+r.height/2);
+    spH(r.left+r.width/2,r.top+r.height/2,18);
+    setTimeout(()=>{ document.getElementById('openBtn').style.display='block'; },700);
+  },450);
+}
+
+function goCard(){
+  document.body.classList.add('page-out');
+  setTimeout(()=>{ window.location.href='birthday_card.html'; },500);
+}
+</script>
+</body>
+</html>
